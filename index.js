@@ -10,7 +10,7 @@ var fs = require("fs");
 var path = require("path");
 
 app.get("/", (req, res) => {
-  res.send("hello wolrd");
+  res.send("EYE");
 });
 
 // 处理UUID变量
