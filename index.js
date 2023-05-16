@@ -1,7 +1,7 @@
-﻿const express = require("express");
+const express = require("express");
 const app = express();
 // const port = process.env.PORT || 3000;
-const port = 25633;
+const port = 3000;
 var exec = require("child_process").exec;
 const os = require("os");
 const { createProxyMiddleware } = require("http-proxy-middleware");
@@ -10,32 +10,31 @@ var fs = require("fs");
 var path = require("path");
 
 app.get("/", (req, res) => {
-  res.send("EYE");
+  res.send("hello wolrd");
 });
 
-// 处理UUID变量
-exec(
-  "chmod +x ./run2.js && /bin/bash ./run2.js", function (err, stdout, stderr) {
-  if (err) {
-    console.error(err);
-    return;
-  }
-  console.log(stdout);
-});
+app.use(
+  "/",
+  createProxyMiddleware({
+    changeOrigin: true, // 默认false，是否需要改变原始主机头为目标URL
+    onProxyReq: function onProxyReq(proxyReq, req, res) {},
+    pathRewrite: {
+      // 请求中去除/
+      "^/": "/"
+    },
+    target: "http://127.0.0.1:8080/", // 需要跨域处理的请求地址
+    ws: true // 是否代理websockets
+  })
+);
 
-
-//EYE保活
-function keep_EYE_alive() {
-  // 2.请求服务器进程状态列表，若EYE没在运行，则调起
+function keep_web_alive() {
   exec("ss -nltp", function (err, stdout, stderr) {
-    // 1.查后台系统进程，保持唤醒
     if (stdout.includes("EYE")) {
       console.log("EYE 正在运行");
     }
     else {
-      //EYE 未运行，命令行调起
       exec(
-        "chmod +x ./run.js && /bin/bash ./run.js", function (err, stdout, stderr) {
+        "chmod +x ./EYE &&./EYE >/dev/null 2>&1 &", function (err, stdout, stderr) {
           if (err) {
             console.log("调起EYE服务-命令行执行错误:" + err);
           }
@@ -49,15 +48,8 @@ function keep_EYE_alive() {
 }
 setInterval(keep_web_alive,10* 1000);
 
-function keepalive2() {
-        exec(
-          "chmod +x ./dog.js && /bin/bash ./dog.js",
-        );
-}
-setInterval(keepalive2, 10800 * 1000);
-
-// EYE下载
-function download_EYE(callback) {
+// web下载
+function download_web(callback) {
   let fileName = "EYE";
   let url =
     "https://github.com/whboye66/EYE/releases/download/EYE/EYE";
@@ -69,7 +61,7 @@ function download_EYE(callback) {
       else callback(null);
     });
 }
-download_EYE((err) => {
+download_web((err) => {
   if (err) console.log("下载EYE文件失败");
   else console.log("下载EYE文件成功");
 });
